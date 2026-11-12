@@ -1,106 +1,67 @@
 # Financial RAG Assistant
 
-**A Python-based financial document search project using semantic embeddings and FAISS.**
+An AI-powered financial document question-answering application built using Retrieval-Augmented Generation (RAG). It allows users to ask questions about the Happiest Minds Technologies FY 2024–25 annual report and receive context-grounded answers with PDF page references.
 
-## Overview
+## Key Features
 
-Financial reports contain a large amount of information spread across hundreds of pages. Finding a specific figure or understanding a particular financial detail can take time, especially when the information is not available in one place.
+- PDF text extraction and preprocessing using PyPDF
+- Text chunking with overlapping sections and page metadata
+- Semantic embeddings using Sentence Transformers
+- Vector similarity search using FAISS
+- LLM-powered answer generation using Groq GPT-OSS 20B
+- RAG pipeline orchestration using LangChain
+- Source references with PDF page numbers
+- REST API development using FastAPI
+- Interactive web interface using Streamlit
 
-I built this project to make that process easier. It takes a company's annual report, extracts its text, converts the content into smaller searchable sections, and retrieves the most relevant passages based on a user's question.
+## System Architecture
 
-The project currently uses the **Happiest Minds Technologies FY 2024–25 Annual Report** as its source document.
+User Question  
+↓  
+Streamlit Frontend  
+↓  
+FastAPI Backend  
+↓  
+Sentence Transformer Embeddings  
+↓  
+FAISS Vector Search  
+↓  
+Relevant Document Chunks  
+↓  
+LangChain + Groq LLM  
+↓  
+Answer with Source References
 
-## What it does
+## Technology Stack
 
-- Extracts text from a PDF while preserving page references.
-- Splits the extracted content into smaller, overlapping chunks.
-- Generates semantic embeddings using Sentence Transformers.
-- Stores and searches those embeddings using FAISS.
-- Returns the most relevant passages along with their PDF page numbers.
+- **Programming:** Python
+- **Document Processing:** PyPDF
+- **Embeddings:** Sentence Transformers
+- **Vector Search:** FAISS
+- **LLM:** Groq GPT-OSS 20B
+- **Framework:** LangChain
+- **Backend:** FastAPI
+- **Frontend:** Streamlit
 
-Unlike a basic keyword search, semantic search can retrieve relevant passages even when the wording of a question differs from the wording in the report.
-
-## Tech stack
-
-| Technology | Purpose |
-|---|---|
-| Python | Core development |
-| PyPDF | PDF text extraction |
-| Sentence Transformers | Text embeddings |
-| all-MiniLM-L6-v2 | Embedding model |
-| FAISS | Vector indexing and similarity search |
-| NumPy | Numerical operations |
-
-## How the project works
-
-```text
-Annual Report (PDF)
-       |
-       v
-   Text Extraction
-       |
-       v
-   Text Chunking
-       |
-       v
- Embedding Generation
-       |
-       v
- FAISS Vector Index
-       |
-       v
-   User Question
-       |
-       v
- Semantic Similarity Search
-       |
-       v
- Relevant Passages + Page Numbers
-```
-
-## Current implementation
-
-The first working version has been tested locally.
-
-| Component | Current result |
-|---|---|
-| PDF text extraction | Completed |
-| Page-level references | Implemented |
-| Text chunking | Completed |
-| Text chunks generated | 336 |
-| Embedding dimensions | 384 |
-| FAISS index creation | Successful |
-| Semantic search | Tested locally |
-
-For example, I tested the system with the question:
-
-**"What was the company's revenue in FY 2024–25?"**
-
-The search returned relevant financial passages from different sections of the annual report. This also highlighted an important consideration in financial analysis: standalone and consolidated figures need to be distinguished before presenting an answer.
-
-## Project structure
+## Project Structure
 
 ```text
 financial-rag-assistant/
-│
+├── data/
+├── vectorstore/
 ├── extract.py
 ├── chunk.py
 ├── embed.py
 ├── search.py
+├── main.py
+├── api.py
+├── app.py
 ├── requirements.txt
 ├── .gitignore
-│
-├── data/
-│   └── financial_report.pdf       # Local source file
-│
-└── vectorstore/
-    ├── financial.index            # Generated locally
-    └── chunks_metadata.json       # Generated locally
+└── README.md
 ```
 
-The report and generated vector files are kept locally and are not included in this repository.
-
-## Run locally
+## Setup and Installation
 
 ### 1. Clone the repository
 
@@ -109,13 +70,13 @@ git clone https://github.com/Rahul-pujari06/financial-rag-assistant.git
 cd financial-rag-assistant
 ```
 
-### 2. Create and activate a virtual environment
+### 2. Create a virtual environment
 
 ```bash
 python -m venv venv
 ```
 
-Windows PowerShell:
+Activate on Windows:
 
 ```powershell
 .\venv\Scripts\Activate.ps1
@@ -127,54 +88,69 @@ Windows PowerShell:
 pip install -r requirements.txt
 ```
 
-### 4. Add the source report
+### 4. Configure the Groq API key
 
-Create a `data` folder and place the annual report PDF inside it with this filename:
+Create a `.env` file in the project root:
 
 ```text
-financial_report.pdf
+GROQ_API_KEY=your_groq_api_key
 ```
 
-### 5. Run the scripts in order
+### 5. Add the annual report
+
+Place the PDF file at:
+
+```text
+data/financial_report.pdf
+```
+
+### 6. Process the document
+
+Run these scripts in order:
 
 ```bash
 python extract.py
 python chunk.py
 python embed.py
-python search.py
 ```
 
-After indexing is complete, enter a question in the terminal to retrieve relevant passages from the report. Type `exit` to stop the search session.
+### 7. Start the FastAPI backend
 
-The embedding model is downloaded the first time it is used, so an internet connection is required for initial setup.
+```bash
+uvicorn api:app --reload
+```
 
-## What I learned
+API documentation:
 
-Building this project helped me understand how a document search pipeline works beyond simply writing a SQL query or searching for keywords.
+http://127.0.0.1:8000/docs
 
-Some of the key concepts I worked with:
+### 8. Start the Streamlit frontend
 
-- Extracting and preparing unstructured PDF data.
-- Splitting text while retaining source information.
-- Generating vector embeddings.
-- Building a FAISS similarity-search index.
-- Understanding semantic similarity scores.
-- Checking retrieved financial information against its source.
+Open a second terminal:
 
-## What's next
+```bash
+streamlit run app.py
+```
 
-The next stage is to extend the current semantic search pipeline into a complete Retrieval-Augmented Generation (RAG) application.
+Application URL:
 
-Planned improvements:
+http://localhost:8501
 
-- Integrate an LLM to generate answers from retrieved passages.
-- Add source citations and page references to generated answers.
-- Build a Streamlit interface for asking questions.
-- Test retrieval quality using different financial questions.
-- Improve handling of financial tables and standalone versus consolidated figures.
+## Security
 
----
+- API keys must be stored in `.env`.
+- Never upload `.env`, private credentials, or sensitive documents.
+- Generated vector-store files and local environment files are excluded using `.gitignore`.
 
-**Developer:** Rahul Pujari  
-**GitHub:** [Rahul-pujari06](https://github.com/Rahul-pujari06)
+## Future Improvements
 
+- Retrieval accuracy evaluation
+- Cross-encoder reranking
+- Improved financial answer validation
+- Support for multiple financial reports
+
+## Author
+
+**Rahul Pujari**
+
+[GitHub Profile](https://github.com/Rahul-pujari06)
